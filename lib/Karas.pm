@@ -442,7 +442,7 @@ This is a default row class.
 
 Default value is : B<Karas::Row>.
 
-=item query_builder(Optional>
+=item query_builder(Optional)
 
 This is a query builder. You need to pass the child class instance of SQL::Maker.
 
