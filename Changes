@@ -1,4 +1,18 @@
 Revision history for Perl extension Karas
 
+0.02
+
+    commit 05682dc2d1b3bcd9bc8218c9d2e25ac604f763e5
+    Author: tokuhirom <tokuhirom@gmail.com>
+    Date:   Tue Dec 4 17:08:10 2012 +0900
+
+    added count method
+
+    commit 8d5c19dc7685f89c41c360bc99691b9b262d9a41
+    Author: tokuhirom <tokuhirom@gmail.com>
+    Date:   Tue Dec 4 16:55:13 2012 +0900
+
+    you can update database via dirty row object
+
 0.01    Tue Dec  4 01:32:56 2012
     - original version

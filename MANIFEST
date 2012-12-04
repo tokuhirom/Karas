@@ -13,6 +13,7 @@ META.json
 META.yml
 README
 t/00_compile.t
+t/01_simple.t
 t/Plugin/Timestamp.t
 xt/01_podspell.t
 xt/02_perlcritic.t
