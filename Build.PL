@@ -20,6 +20,7 @@ my $build = Module::Build->new(
         'Scalar::Util' => 0,
         'Class::Trigger' => 0,
         'DBIx::TransactionManager' => 0,
+        'DBI' => '1.6.14',
         'parent'                        => '0',
     },
 

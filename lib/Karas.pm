@@ -39,6 +39,11 @@ sub new {
     unless ($args{connect_info}) {
         Carp::croak("Missing mandatory parameter: connect_info");
     }
+    $args{connect_info}->[3]->{RaiseError} //= 1;
+    $args{connect_info}->[3]->{PrintError} //= 0;
+    $args{connect_info}->[3]->{AutoCommit} //= 1;
+    $args{connect_info}->[3]->{ShowErrorStatement} //= 1;
+    $args{connect_info}->[3]->{AutoInactiveDestroy} //= 1;
     $args{row_class_map} = $class->load_row_class_map();
     $args{default_row_class} ||= 'Karas::Row';
     $args{connection_manager} = DBIx::ForkSafe->new(
@@ -158,6 +163,15 @@ sub search {
         push @rows, $row_class->new($table, $row);
     }
     return @rows;
+}
+
+sub count {
+    my ($self, $table, $where) = @_;
+    my ($sql, @binds) = $self->query_builder->select($table, [\'COUNT(*)'], $where);
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@binds);
+    my ($count) = $sth->fetchrow_array();
+    return $count;
 }
 
 sub search_with_pager {
@@ -468,7 +482,11 @@ Get a database handle. If the connection was closed, Karas reconnects automatica
 
 Search rows from database. For more details, please see L<SQL::Maker>.
 
-=item my ($rows, $pager) = $db->search($table, $where[, $opt])
+=item my $count = $db->count($table[, $where])
+
+Count rows by $where.
+
+=item my ($rows, $pager) = $db->search_with_pager($table, $where[, $opt])
 
 I<$pager> is instance of Data::Page::NoTotalEntries.
 

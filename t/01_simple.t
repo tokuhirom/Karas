@@ -27,5 +27,17 @@ subtest 'update from row object.' => sub {
     is($new->name(), 'Ben');
 };
 
+subtest 'count' => sub {
+    my $db = create_karas();
+    $db->dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
+    $db->insert(foo => {id => 1, name => 'John'});
+    $db->insert(foo => {id => 2, name => 'John'});
+    $db->insert(foo => {id => 3, name => 'John'});
+    $db->insert(foo => {id => 4, name => 'Ben'});
+    is($db->count('foo'), 4);
+    is($db->count('foo' => {name => 'John'}), 3);
+    is($db->count('foo' => {name => 'Ben'}), 1);
+};
+
 done_testing;
 
