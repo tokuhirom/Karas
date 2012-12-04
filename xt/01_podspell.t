@@ -60,3 +60,5 @@ mysqldiff
 mmm
 JSON
 Plugins
+refetch
+Refetch

@@ -6,7 +6,11 @@ use Carp ();
 
 sub new {
     my ($class, $table_name, $values) = @_;
-    bless {__private_table_name => $table_name, %$values}, $class;
+    bless {
+        __private_table_name   => $table_name,
+        __private_dirty_column => +{},
+        %$values,
+    }, $class;
 }
 
 # You can override this attribute as class data.
@@ -25,10 +29,13 @@ sub mk_accessors {
         no strict 'refs';
         *{"${class}::${col}"} = sub {
             if (@_==1) {
+                # my ($self) = @_;
                 Carp::croak("You don't selected $col") unless exists $_[0]->{$col};
                 return $_[0]->{$col};
             } elsif (@_==2) {
-                $_[0]->{__private_dirty_column}->{$col} = $_[1];
+                # my ($self, $val) = @_;
+                Carp::croak("You can't set non scalar value as column data: $col") if ref $_[1];
+                $_[0]->{$col} = ($_[0]->{__private_dirty_column}->{$col} = $_[1]);
             } else {
                 Carp::croak("Too many arguments for ${class}::${col}");
             }

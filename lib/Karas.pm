@@ -243,6 +243,8 @@ sub update {
     my $self = shift;
     if (UNIVERSAL::isa($_[0], 'Karas::Row')) {
         my ($row, $set) = @_;
+        $set ||= +{};
+        $set = +{ %{$row->get_dirty_columns()}, %$set };
         my $where = $row->make_where_condition();
         $self->call_trigger(BEFORE_UPDATE_ROW => $row, $set);
         my $rows = $self->_update($row->table_name, $set, $where);
