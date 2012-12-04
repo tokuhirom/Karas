@@ -23,8 +23,8 @@ use Class::Trigger qw(
 
     BEFORE_DELETE_ROW
     BEFORE_DELETE_WHERE
-
-    AFTER_DELETE
+    AFTER_DELETE_ROW
+    AFTER_DELETE_DIRECT
 );
 
 use DBIx::TransactionManager;
@@ -442,13 +442,13 @@ Default value is : C<< Karas::QueryBuilder->new() >>.
 
 =item $db->connect([@args])
 
-Connect to Database immidiately.
+Connect to Database immediately.
 
 If you pass @args, $db->{connec_info} will upgrade by @args.
 
 =item $db->reconnect([@args])
 
-Reconnect to Database immidiately.
+Reconnect to Database immediately.
 
 If you pass @args, $db->{connec_info} will upgrade by @args.
 
@@ -460,7 +460,55 @@ Get a database handle. If the connection was closed, Karas reconnects automatica
 
 =head2 SQL Operations
 
-TBD
+=over 4
+
+=item my @rows = $db->search($table, $where[, $opt])
+
+Search rows from database. For more details, please see L<SQL::Maker>.
+
+=item my ($rows, $pager) = $db->search($table, $where[, $opt])
+
+I<$pager> is instance of Data::Page::NoTotalEntries.
+
+=item my @rows = $db->search_by_sql($sql, $binds[, $table_name]);
+
+Search rows by SQL.
+
+I<$table_name> is optional. Karas finds table name by $sql automatically.
+
+=item my $row = $db->insert($table, $values);
+
+Insert row to database. And refetch row from database.
+
+=item $db->fast_insert($table, $values);
+
+Insert row to database.
+
+=item $db->update($row, \%opts)
+
+Update row object by \%opts.
+
+=item my $affected_rows = $db->update($table_name, $set, $where)
+
+Update I<$table_name> set I<$set> where I<$where>.
+
+=item $db->delete($row);
+
+Delete row object from database.
+
+=item $db->delete($table_name, $where)
+
+Delete $table_name where $where.
+
+=item $db->refetch($row)
+
+Refetch I<$row> object from database.
+
+=item $db->bulk_insert($table_name, $cols, $binds, $opts)
+
+This is a bulk insert method. see L<SQL::Maker::Plugin::InsertMulti>.
+
+=back
 
 =head2 Row class map management
 

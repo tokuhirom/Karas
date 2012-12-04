@@ -14,6 +14,7 @@ sub primary_key { qw(id) }
 
 sub table_name { $_[0]->{__private_table_name} }
 sub is_living_dead { $_[0]->{__private_living_dead} }
+sub get_dirty_columns { $_[0]->{__private_dirty_column} }
 
 sub mk_accessors {
     my ($class, @cols) = @_;
@@ -23,9 +24,14 @@ sub mk_accessors {
         Carp::croak("Invalid column name: $col") if $col =~ /^__private/;
         no strict 'refs';
         *{"${class}::${col}"} = sub {
-            Carp::croak("Too many arguments for ${class}::${col}") if @_ != 1;
-            Carp::croak("You don't selected $col") unless exists $_[0]->{$col};
-            return $_[0]->{$col};
+            if (@_==1) {
+                Carp::croak("You don't selected $col") unless exists $_[0]->{$col};
+                return $_[0]->{$col};
+            } elsif (@_==2) {
+                $_[0]->{__private_dirty_column}->{$col} = $_[1];
+            } else {
+                Carp::croak("Too many arguments for ${class}::${col}");
+            }
         };
     }
 }
@@ -47,6 +53,12 @@ sub get_column {
     Carp::croak("Invalid column name: $col") if $col =~ /^__private/;
     Carp::croak("This row is living dead(" . $self->table_name . '). It means this row object was already updated or deleted. You need to refetch object.') if $self->is_living_dead();
     return $self->{$col};
+}
+
+sub set_column {
+    my ($self, $col, $val) = @_;
+    Carp::croak("Usage: Karas::Row#set_column(\$col, \$val)") unless @_==3;
+    $_[0]->{__private_dirty_column}->{$_[1]} = $_[2];
 }
 
 sub make_living_dead {
