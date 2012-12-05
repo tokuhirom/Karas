@@ -22,6 +22,8 @@ my $build = Module::Build->new(
         'DBIx::TransactionManager' => 0,
         'DBI' => '1.6.14',
         'parent'                        => '0',
+        'SQL::Maker' => 0,
+        'Data::Page::NoTotalEntries' => 0,
     },
 
     no_index    => { 'directory' => [ 'inc' ] },
