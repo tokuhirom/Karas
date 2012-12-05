@@ -1,5 +1,9 @@
 Revision history for Perl extension Karas
 
+0.03
+
+    - fixed deps(reported by syohex)
+
 0.02
 
     commit 05682dc2d1b3bcd9bc8218c9d2e25ac604f763e5
