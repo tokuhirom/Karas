@@ -17,7 +17,6 @@ sub new {
 sub primary_key { qw(id) }
 
 sub table_name { $_[0]->{__private_table_name} }
-sub is_living_dead { $_[0]->{__private_living_dead} }
 sub get_dirty_columns { $_[0]->{__private_dirty_column} }
 
 sub mk_accessors {
@@ -58,7 +57,6 @@ sub get_column {
     Carp::croak("Column is undefined") unless defined $col;
     Carp::croak("You don't selected $col") unless exists $self->{$col};
     Carp::croak("Invalid column name: $col") if $col =~ /^__private/;
-    Carp::croak("This row is living dead(" . $self->table_name . '). It means this row object was already updated or deleted. You need to refetch object.') if $self->is_living_dead();
     return $self->{$col};
 }
 
@@ -66,13 +64,6 @@ sub set_column {
     my ($self, $col, $val) = @_;
     Carp::croak("Usage: Karas::Row#set_column(\$col, \$val)") unless @_==3;
     $_[0]->{__private_dirty_column}->{$_[1]} = $_[2];
-}
-
-sub make_living_dead {
-    my ($self) = @_;
-    Carp::croak("Usage: Karas#make_living_dead()") if @_!=1;
-    $self->{__private_living_dead}++;
-    return undef;
 }
 
 our $AUTOLOAD;
