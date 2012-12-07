@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use utf8;
 use Test::More;
-use Test::Requires 'DBD::SQLite';
+use Test::Requires 'DBD::SQLite', 'Test::Time';
 use Test::Time;
 use Karas;
 
