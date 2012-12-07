@@ -20,6 +20,7 @@ sub init {
 
 sub _insert_on_duplicate {
     my ($self, $table_name, $insert_values, $update_values) = @_;
+    $self->call_trigger(BEFORE_INSERT_ON_DUPLICATE => $table_name, $insert_values, $update_values);
     my ($sql, @binds) = $self->query_builder->insert_on_duplicate($table_name, $insert_values, $update_values);
     my $sth = $self->dbh->prepare($sql);
     $sth->execute(@binds);
