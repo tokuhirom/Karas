@@ -1,7 +1,6 @@
 .travis.yml
 Build.PL
 Changes
-lib/DBIx/ForkSafe.pm
 lib/Karas.pm
 lib/Karas/Plugin/Timestamp.pm
 lib/Karas/QueryBuilder.pm

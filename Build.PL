@@ -24,6 +24,8 @@ my $build = Module::Build->new(
         'parent'                        => '0',
         'SQL::Maker' => 0,
         'Data::Page::NoTotalEntries' => 0,
+        'DBIx::Handler' => 0,
+        'DBIx::Inspector' => 0,
     },
 
     no_index    => { 'directory' => [ 'inc' ] },
