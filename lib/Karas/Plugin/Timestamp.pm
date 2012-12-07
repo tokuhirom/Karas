@@ -4,8 +4,6 @@ use warnings;
 use utf8;
 use DBIx::Inspector;
 
-sub _any { $_ && return 1 for @_; 0 }
-
 sub new {
     my $self = shift;
     my %args = @_==1 ? %{$_[0]} : @_;
