@@ -17,6 +17,8 @@ use Class::Trigger qw(
     BEFORE_INSERT
     AFTER_INSERT
 
+    BEFORE_BULK_INSERT
+
     BEFORE_UPDATE_ROW
     AFTER_UPDATE_ROW
     BEFORE_UPDATE_DIRECT
@@ -52,7 +54,7 @@ sub new {
     my $self = bless {
         %args
     }, $class;
-    $self->{query_builder} ||= SQL::Maker->new(driver => $self->_driver_name);
+    $self->{query_builder} ||= Karas::QueryBuilder->new(driver => $self->_driver_name);
     return $self;
 }
 
@@ -240,6 +242,35 @@ sub _insert {
     return $last_insert_id;
 }
 
+sub retrieve {
+    my ($self, $table, $vals) = @_;
+    Carp::croak("Missing mandatory parameter: table") unless defined $table;
+    Carp::croak("Too many arguments") if @_ > 3;
+
+    my $row_class = $self->get_row_class($table);
+    my %where;
+    if (ref $vals eq 'HASH') {
+        %where = %$vals;
+    } elsif (ref $vals) {
+        Carp::croak("Bad arguments for retrieve: $vals");
+    } else {
+        my @pk = $row_class->primary_key;
+        if (@pk != 1) {
+            Carp::croak(sprintf("%s has %d primary keys, but you passed %d(%s)", $table, 0+@pk, 1, join(', ', @pk)));
+        }
+        $where{$pk[0]} = $vals;
+    }
+    my ($sql, @binds) = $self->query_builder->select($table, [\'*'], \%where);
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@binds);
+    my $row = $sth->fetchrow_hashref;
+    if ($row) {
+        return $row_class->new($table, $row);
+    } else {
+        return undef;
+    }
+}
+
 sub update {
     my $self = shift;
     if (UNIVERSAL::isa($_[0], 'Karas::Row')) {
@@ -253,6 +284,8 @@ sub update {
         return $rows;
     } else {
         my ($table_name, $set, $where) = @_;
+        Carp::croak("Usage: \$db->update(\$table_name, \%set, \%where)") if ref $table_name;
+        Carp::croak("Usage: \$db->update(\$table_name, \%set, \%where)") if @_!=3;
         $self->call_trigger(BEFORE_UPDATE_DIRECT => $table_name, $set, $where);
         my $rows = $self->_update($table_name, $set, $where);
         $self->call_trigger(AFTER_UPDATE_DIRECT => $table_name, $set, $where);
@@ -308,8 +341,10 @@ sub bulk_insert {
     my ($self, $table_name, $cols, $binds, $opts) = @_;
     Carp::croak("Missing mandatory parameter: table_name") unless defined $table_name;
     $self->call_trigger(BEFORE_BULK_INSERT => $table_name, $cols, $binds, $opts);
-    $self->query_builder->insert_multi($table_name, $cols, $binds, $opts);
-    return undef;
+    my ($sql, @binds) = $self->query_builder->insert_multi($table_name, $cols, $binds, $opts);
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@binds);
+    return $sth->rows;
 }
 
 # taken from teng.
