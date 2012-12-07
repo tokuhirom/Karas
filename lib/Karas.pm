@@ -41,11 +41,14 @@ sub new {
     unless ($args{connect_info}) {
         Carp::croak("Missing mandatory parameter: connect_info");
     }
+
+    # ref. http://blog.nomadscafe.jp/2012/11/dbi-connect.html
     $args{connect_info}->[3]->{RaiseError} //= 1;
     $args{connect_info}->[3]->{PrintError} //= 0;
     $args{connect_info}->[3]->{AutoCommit} //= 1;
     $args{connect_info}->[3]->{ShowErrorStatement} //= 1;
     $args{connect_info}->[3]->{AutoInactiveDestroy} //= 1;
+
     $args{row_class_map} = $class->load_row_class_map();
     $args{default_row_class} ||= 'Karas::Row';
     $args{connection_manager} = DBIx::Handler->new(
