@@ -12,6 +12,7 @@ use Module::Load ();
 use String::CamelCase ();
 use Data::Page::NoTotalEntries;
 use Scalar::Util ();
+use DBIx::Handler;
 use Class::Trigger qw(
     BEFORE_INSERT
     AFTER_INSERT
@@ -28,7 +29,6 @@ use Class::Trigger qw(
 );
 
 use DBIx::TransactionManager;
-use DBIx::ForkSafe;
 
 use Karas::Row;
 use Karas::QueryBuilder;
@@ -46,13 +46,12 @@ sub new {
     $args{connect_info}->[3]->{AutoInactiveDestroy} //= 1;
     $args{row_class_map} = $class->load_row_class_map();
     $args{default_row_class} ||= 'Karas::Row';
-    $args{connection_manager} = DBIx::ForkSafe->new(
-        connect_info => $args{connect_info},
+    $args{connection_manager} = DBIx::Handler->new(
+        @{$args{connect_info}}
     );
     my $self = bless {
         %args
     }, $class;
-    $self->connect();
     $self->{query_builder} ||= SQL::Maker->new(driver => $self->_driver_name);
     return $self;
 }
@@ -88,24 +87,12 @@ sub dbh {
 sub disconnect {
     my ($self) = @_;
     Carp::croak("Too many arguments for Karas#disconnect") if @_!=1;
-    delete $self->{txn_manager};
     $self->connection_manager->disconnect();
-    return undef;
 }
 
 sub reconnect {
     my $self = shift;
-    $self->_in_transaction_check();
     $self->connection_manager->reconnect(@_);
-    return undef;
-}
-
-sub connect {
-    my $self = shift;
-    $self->_in_transaction_check();
-    $self->connection_manager->connect(@_);
-    delete $self->{txn_manager};
-    return undef;
 }
 
 # ------------------------------------------------------------------------- 
@@ -342,19 +329,7 @@ sub guess_table_name {
 
 sub txn_scope {
     my ($self) = @_;
-    $self->{txn_manager} ||= DBIx::TransactionManager->new($self->dbh);
-    Scalar::Util::weaken($self->{txn_manager}->{dbh});
-    return $self->{txn_manager}->txn_scope;
-}
-
-sub _in_transaction_check {
-    my $self = shift;
-    return unless $self->{txn_manager};
-    if ( my $info = $self->{txn_manager}->in_transaction ) {
-        my $caller = $info->{caller};
-        my $pid    = $info->{pid};
-        Carp::confess("Detected transaction during a connect operation (last known transaction at $caller->[1] line $caller->[2], pid $pid). Refusing to proceed at");
-    }
+    return $self->connection_manager->txn_scope;
 }
 
 # taken from Teng
