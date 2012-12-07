@@ -312,7 +312,6 @@ sub delete {
         my $where = $row->make_where_condition();
         my $retval = $self->_delete($row->table_name, $row->where);
         $self->call_trigger(AFTER_DELETE_ROW => $row);
-        $row->make_living_dead();
         return $retval;
     } else {
         my ($table_name, $where);
