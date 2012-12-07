@@ -15,7 +15,6 @@ use Scalar::Util ();
 use DBIx::Handler;
 use Class::Trigger qw(
     BEFORE_INSERT
-    AFTER_INSERT
 
     BEFORE_BULK_INSERT
 
@@ -241,7 +240,6 @@ sub _insert {
     my $sth = $self->dbh->prepare($sql);
     $sth->execute(@binds);
     my $last_insert_id = $self->last_insert_id;
-    $self->call_trigger(AFTER_INSERT => $table, $values, $last_insert_id);
     return $last_insert_id;
 }
 
