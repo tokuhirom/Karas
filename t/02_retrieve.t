@@ -16,15 +16,10 @@ sub create_karas {
     );
 }
 
-{
-    package MultiPK;
-    use parent qw/Karas::Row/;
-    sub primary_key { qw/tag_id entry_id/ }
-}
-
 subtest 'run' => sub {
     my $db = create_karas();
-    $db->dbh->do(q{CREATE TABLE member (id, name)});
+    $db->dbh->do(q{CREATE TABLE member (id INTEGER PRIMARY KEY, name)});
+    $db->load_schema(namespace => 'MyApp::DB');
     $db->insert(member => {id => 1, name => 'John'});
     $db->insert(member => {id => 2, name => 'Ben'});
     $db->insert(member => {id => 3, name => 'Dan'});
@@ -33,7 +28,8 @@ subtest 'run' => sub {
 
 subtest 'multi pk' => sub {
     my $db = create_karas(default_row_class => 'MultiPK');
-    $db->dbh->do(q{CREATE TABLE tag_entry (tag_id, entry_id, updated_at)});
+    $db->dbh->do(q{CREATE TABLE tag_entry (tag_id, entry_id, updated_at, PRIMARY KEY (tag_id, entry_id))});
+    $db->load_schema(namespace => 'MyApp2::DB');
     $db->insert(tag_entry => {tag_id => 3, entry_id => 4, updated_at => 555});
     $db->insert(tag_entry => {tag_id => 4, entry_id => 5, updated_at => 556});
     $db->insert(tag_entry => {tag_id => 5, entry_id => 6, updated_at => 557});

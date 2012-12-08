@@ -24,6 +24,7 @@ sub create_db {
 
 subtest 'insert' => sub {
     my $db = create_db();
+    $db->load_schema(namespace => 'MyDB');
     $db->insert(foo => {
         id => 1,
         name => 'heh',
@@ -35,6 +36,7 @@ subtest 'insert' => sub {
 
 subtest 'bulk_insert' => sub {
     my $db = create_db();
+    $db->load_schema(namespace => 'MyDB2');
     $db->bulk_insert(foo => ['id', 'name'], [
          [1, 'heh'],
          [2, 'bar'],
@@ -47,6 +49,7 @@ subtest 'bulk_insert' => sub {
 
 subtest 'update_row' => sub {
     my $db = create_db();
+    $db->load_schema(namespace => 'MyDB3');
     $db->insert(foo => {
         id => 1,
         name => 'heh',
@@ -60,6 +63,7 @@ subtest 'update_row' => sub {
 
 subtest 'update_direct' => sub {
     my $db = create_db();
+    $db->load_schema(namespace => 'MyDB4');
     $db->insert(foo => {
         id => 1,
         name => 'heh',
