@@ -38,6 +38,7 @@ sub dump {
             sprintf("__PACKAGE__->mk_accessors(qw(%s));", join(' ', map { $_->name } $table->columns)),
             sprintf("sub table_name { '%s' }", $table->name),
             sprintf("sub primary_key { qw(%s) }", join(' ', map { $_->name } $table->primary_key())),
+            sprintf("sub column_names { qw(%s) }", join(' ', map { $_->name } $table->columns())),
             '',
         );
     }

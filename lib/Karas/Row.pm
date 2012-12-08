@@ -15,8 +15,13 @@ sub new {
 }
 
 # Abstract methods.
-sub table_name  { Carp::croak("Abstract method"); }
-sub primary_key { Carp::croak("Abstract method"); }
+sub table_name   { Carp::croak("Abstract method"); }
+sub primary_key  { Carp::croak("Abstract method"); }
+sub column_names { Carp::croak("Abstract method"); }
+sub has_column   {
+    my ($self, $column) = @_;
+    return (grep { $_ eq $column } $self->column_names) > 0;
+}
 
 sub get_dirty_columns { $_[0]->{__private_dirty_column} }
 

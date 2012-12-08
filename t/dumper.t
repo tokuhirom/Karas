@@ -23,6 +23,9 @@ subtest 'dumper' => sub {
         'member' => 'MyApp::DB::Row::Member'
     });
     is_deeply([MyApp::DB::Row::Member->primary_key], ['id']);
+    is_deeply([MyApp::DB::Row::Member->column_names], ['id', 'name']);
+    ok(MyApp::DB::Row::Member->has_column('id'));
+    ok(not MyApp::DB::Row::Member->has_column('address'));
     is_deeply([MyApp::DB::Row::TagEntry->primary_key], ['tag_id', 'entry_id']);
 };
 

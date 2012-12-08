@@ -66,12 +66,12 @@ sub init {
 
 sub _has_created_on {
     my ($self, $db, $table_name) = @_;
-    return (grep { $_ eq 'created_on' } $db->get_row_class($table_name)->column_names) > 0;
+    return $db->get_row_class($table_name)->has_column('created_on');
 }
 
 sub _has_updated_on {
     my ($self, $db, $table_name) = @_;
-    return (grep { $_ eq 'updated_on' } $db->get_row_class($table_name)->column_names) > 0;
+    return $db->get_row_class($table_name)->has_column('updated_on');
 }
 
 1;

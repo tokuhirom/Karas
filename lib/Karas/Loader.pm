@@ -39,6 +39,11 @@ sub load {
         {
             *{"${klass}::column_names"} = sub { @column_names };
         }
+        # define 'has_column'
+        {
+            my %column_names = map { $_ => 1 } @column_names;
+            *{"${klass}::has_column"} = sub { $column_names{$_[1]} };
+        }
     }
     return \%class_map;
 }
