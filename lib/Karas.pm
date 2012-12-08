@@ -71,6 +71,9 @@ sub _driver_name {
 # -------------------------------------------------------------------------
 sub load_plugin {
     my ($class, $name, $args) = @_;
+    Carp::croak("Do not use this plugin to instance") if ref $class;
+    Carp::croak("Do not load this plugin to Karas itself. Please make your own child class from Karas.") if $class eq 'Karas';
+
     $name = ($name =~ s/^\+//) ? $name : "Karas::Plugin::$name";
     Module::Load::load($name);
     my $plugin = $name->new($args || +{});
