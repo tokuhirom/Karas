@@ -17,6 +17,11 @@ subtest 'dumper' => sub {
     note $src;
     eval $src;
     ok(!$@) or diag $@;
+    is_deeply(MyApp::DB::Schema->table_name2class(), {
+        'entry' => 'MyApp::DB::Row::Entry',
+        'tag_entry' => 'MyApp::DB::Row::TagEntry',
+        'member' => 'MyApp::DB::Row::Member'
+    });
     is_deeply([MyApp::DB::Row::Member->primary_key], ['id']);
     is_deeply([MyApp::DB::Row::TagEntry->primary_key], ['tag_id', 'entry_id']);
 };

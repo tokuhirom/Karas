@@ -113,7 +113,7 @@ sub load_schema {
 
 sub get_row_class {
     my ($self, $table_name) = @_;
-    Carp::croak("Missing mandatory parameter: table") unless $table_name;
+    Carp::croak("Missing mandatory parameter: table_name") unless $table_name;
     my $row_class = $self->row_class_map->{$table_name}
         or Carp::croak("Unknown table: $table_name. $table_name is not registered to Karas.");
     return $row_class;
