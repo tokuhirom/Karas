@@ -30,7 +30,7 @@ sub mk_accessors {
         *{"${class}::${col}"} = sub {
             if (@_==1) {
                 # my ($self) = @_;
-                Carp::croak("You don't selected $col") unless exists $_[0]->{$col};
+                Carp::croak("You don't selected $col in SQL.") unless exists $_[0]->{$col};
                 return $_[0]->{$col};
             } elsif (@_==2) {
                 # my ($self, $val) = @_;
