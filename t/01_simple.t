@@ -11,7 +11,8 @@ sub create_karas {
             'dbi:SQLite::memory:', '', '', {
             RaiseError => 1,
             PrintError => 0,
-        }]
+        }],
+        row_class_map => {},
     );
     return $db;
 }
@@ -19,7 +20,7 @@ sub create_karas {
 subtest 'update from row object.' => sub {
     my $db = create_karas();
     $db->dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
-    $db->load_schema(namespace => 'MyApp::DB');
+    $db->load_schema_from_db(namespace => 'MyApp::DB');
     my $row = $db->insert(foo => {id => 1, name => 'John'});
     is($row->name(), 'John');
     $row->name('Ben');
@@ -32,7 +33,7 @@ subtest 'update from row object.' => sub {
 subtest 'count' => sub {
     my $db = create_karas();
     $db->dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
-    $db->load_schema(namespace => 'MyApp2::DB');
+    $db->load_schema_from_db(namespace => 'MyApp2::DB');
     $db->insert(foo => {id => 1, name => 'John'});
     $db->insert(foo => {id => 2, name => 'John'});
     $db->insert(foo => {id => 3, name => 'John'});

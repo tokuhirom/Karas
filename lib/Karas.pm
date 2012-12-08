@@ -101,9 +101,18 @@ sub disconnect {
 #
 # -------------------------------------------------------------------------
 
-sub load_schema {
+sub load_schema_from_db {
     my ($self, %args) = @_;
     require Karas::Loader;
+    my $class = ref($self) || $self;
+    $args{namespace} //= do {
+        if ($class eq 'Karas') {
+            state $i=0;
+            $class . '::Anon' . $i++;
+        } else {
+            $class;
+        }
+    };
     $self->{row_class_map} = Karas::Loader->load(
         dbh => $self->dbh,
         %args

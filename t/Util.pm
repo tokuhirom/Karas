@@ -11,7 +11,8 @@ sub create_karas {
     require Test::Requires;
     Test::Requires->import('DBD::SQLite');
     my $db = Karas->new(
-        connect_info => ['dbi:SQLite::memory:']
+        connect_info => ['dbi:SQLite::memory:'],
+        row_class_map => {},
     );
     return $db;
 }
