@@ -12,6 +12,9 @@ sub new {
 
 sub init {
     my ($plugin, $db) = @_;
+    Carp::croak("Do not use this plugin to instance") if ref $db;
+    Carp::croak("Do not load this plugin to Karas itself. Please make your own child class from Karas.") if $db eq 'Karas';
+
     $db->add_trigger('BEFORE_INSERT' => sub {
         my ($db, $table_name, $values) = @_;
         if ($plugin->_has_created_on($db->dbh, $table_name)) {
@@ -94,4 +97,34 @@ sub _load_schema {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Karas::Plugin::Timestamp - Timestamp plugin
+
+=head1 DESCRIPTION
+
+This is a timestamp plugin for Karas.
+
+If your tables has created_on or updated_on columns.
+
+Note: This plugin detects created_on/updated_on using DBIx::Inspector.
+
+I don't recommend to use this plugin.
+
+=head1 AFTER MYSQL 5.6
+
+MySQL 5.6 supports more flexible timestamp management.
+
+You can use following style.
+
+    CREATE TABLE t1 (
+        created_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_on DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    );
+
+See this URL for more details:
+https://dev.mysql.com/doc/refman/5.6/en/timestamp-initialization.html
+http://optimize-this.blogspot.co.uk/2012/04/datetime-default-now-finally-available.html
 
