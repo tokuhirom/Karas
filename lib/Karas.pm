@@ -403,7 +403,7 @@ Karas - Yet another O/R Mapper.
     my $member = $db->insert('member' => {
         name => 'John',
     });
-    $db->update($db->member, {
+    $db->update($member, {
         name => 'Mills',
     });
     $member = $db->refetch($member);
