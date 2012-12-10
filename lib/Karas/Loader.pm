@@ -13,10 +13,15 @@ sub load {
     my %args = @_==1 ? %{$_[0]} : @_;
     $args{namespace} //= do {
         state $i=0;
-        "Karas::Loader::Anon" . $i++;
+        my $klass = "Karas::Loader::Anon" . $i++;
+        {
+            no strict 'refs';
+            push @{"${klass}::ISA"}, 'Karas';
+        }
+        $klass;
     };
     my $row_class_map = $class->load_schema(%args);
-    my $db = Karas->new(
+    my $db = $args{namespace}->new(
         %args,
         row_class_map => $row_class_map,
     );
