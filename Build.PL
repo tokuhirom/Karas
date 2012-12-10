@@ -10,7 +10,7 @@ my $build = Module::Build->new(
         'Test::More' => '0.98',
         'Test::Requires' => 0,
         'DBD::SQLite' => 1.37,
-        'DBD::PassThrough' => 0,
+        'DBD::PassThrough' => 0.02,
     },
     configure_requires   => { 'Module::Build' => '0.38' },
     requires             => {
