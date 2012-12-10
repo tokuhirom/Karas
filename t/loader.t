@@ -8,8 +8,10 @@ use Karas::Loader;
 subtest 'x' => sub {
     my $dbh = DBI->connect('dbi:SQLite::memory:', '', '', {RaiseError => 1});
     $dbh->do(q{CREATE TABLE member (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR(255) NOT NULL)});
-    my $schema = Karas::Loader->load(
-        dbh       => $dbh,
+    my $schema = Karas::Loader->load_schema(
+        connect_info => [
+            'dbi:PassThrough:', '', '', { pass_through_source => $dbh },
+        ],
         namespace => 'MyApp::DB',
     );
     is_deeply($schema, {

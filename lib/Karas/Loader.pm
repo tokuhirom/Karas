@@ -2,23 +2,44 @@ package Karas::Loader;
 use strict;
 use warnings;
 use utf8;
+use 5.0100000;
 use Carp ();
 use Karas::Dumper;
 use DBIx::Inspector;
+use Karas;
 
 sub load {
     my $class = shift;
-    my %args = @_ == 1 ? %{$_[0]} : @_;
-    my $dbh = $args{dbh} // Carp::croak "Missing mandatory parameter: dbh";
-    my $namespace = $args{namespace} // Carp::croak "Missing mandatory parameter: namespace";
-    my $name_map = $args{name_map} || +{};
+    my %args = @_==1 ? %{$_[0]} : @_;
+    $args{namespace} //= do {
+        state $i=0;
+        "Karas::Loader::Anon" . $i++;
+    };
+    my $row_class_map = $class->load_schema(%args);
+    my $db = Karas->new(
+        %args,
+        row_class_map => $row_class_map,
+    );
+    return $db;
+}
 
+sub load_schema {
+    my $class = shift;
+    my %args = @_ == 1 ? %{$_[0]} : @_;
+    my $connect_info = $args{connect_info} // Carp::croak "Missing mandatory parameter: connect_info";
+    my $namespace = $args{namespace} // Carp::croak "Missing mandatory parameter: namespace";
+    my $decamelize_map = $args{decamelize_map} || +{};
+
+    my $dbh = DBI->connect(@$connect_info) or Carp::croak("Cannot connect to database: $DBI::errstr");
     my $inspector = DBIx::Inspector->new(dbh => $dbh);
     require Karas::Row;
     my %class_map;
     for my $table ($inspector->tables) {
         no strict 'refs';
-        my $klass = sprintf("%s::Row::%s", $namespace, $name_map->{$table->name} || String::CamelCase::camelize($table->name));
+        my $klass = sprintf( "%s::Row::%s",
+            $namespace,
+            $decamelize_map->{ $table->name } || String::CamelCase::camelize( $table->name )
+        );
         $class_map{$table->name} = $klass;
         # setup inheritance
         unshift @{"${klass}::ISA"}, 'Karas::Row';
