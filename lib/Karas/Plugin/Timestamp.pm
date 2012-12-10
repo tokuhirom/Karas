@@ -46,6 +46,22 @@ sub init {
             }
         }
     });
+    $db->add_trigger('BEFORE_INSERT_ON_DUPLICATE' => sub {
+        my ($db, $table_name, $insert_values, $update_values) = @_;
+        if ($plugin->_has_created_on($db, $table_name)) {
+            unless (exists $insert_values->{created_on}) {
+                $insert_values->{'created_on'} = time();
+            }
+            unless (exists $insert_values->{updated_on}) {
+                $insert_values->{'updated_on'} = time();
+            }
+        }
+        if ($plugin->_has_updated_on($db, $table_name)) {
+            unless (exists $update_values->{updated_on}) {
+                $update_values->{'updated_on'} = time();
+            }
+        }
+    });
     $db->add_trigger('BEFORE_UPDATE_ROW' => sub {
         my ($db, $row, $set) = @_;
         if ($plugin->_has_updated_on($db, $row->table_name)) {
