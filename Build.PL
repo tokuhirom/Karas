@@ -9,6 +9,8 @@ my $build = Module::Build->new(
     build_requires       => {
         'Test::More' => '0.98',
         'Test::Requires' => 0,
+        'DBD::SQLite' => 1.37,
+        'DBD::PassThrough' => 0,
     },
     configure_requires   => { 'Module::Build' => '0.38' },
     requires             => {
@@ -18,13 +20,13 @@ my $build = Module::Build->new(
         'Module::Load' => 0,
         'String::CamelCase' => 0,
         'Scalar::Util' => 0,
-        'Class::Trigger' => 0,
-        'DBIx::TransactionManager' => 0,
+        'Class::Trigger' => '0.14',
+        'DBIx::TransactionManager' => '1.11',
         'DBI' => '1.6.14',
         'parent'                        => '0',
-        'SQL::Maker' => 0,
+        'SQL::Maker' => '1.07',
         'Data::Page::NoTotalEntries' => 0,
-        'DBIx::Handler' => 0,
+        'DBIx::Handler' => '0.04',
         'DBIx::Inspector' => 0,
     },
 

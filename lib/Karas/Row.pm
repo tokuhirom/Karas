@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use Carp ();
+use String::CamelCase ();
 
 sub new {
     my ($class, $table_name, $values) = @_;
@@ -13,10 +14,15 @@ sub new {
     }, $class;
 }
 
-# You can override this attribute as class data.
-sub primary_key { qw(id) }
+# Abstract methods.
+sub table_name   { Carp::croak("Abstract method"); }
+sub primary_key  { Carp::croak("Abstract method"); }
+sub column_names { Carp::croak("Abstract method"); }
+sub has_column   {
+    my ($self, $column) = @_;
+    return (grep { $_ eq $column } $self->column_names) > 0;
+}
 
-sub table_name { $_[0]->{__private_table_name} }
 sub get_dirty_columns { $_[0]->{__private_dirty_column} }
 
 sub mk_accessors {
@@ -29,7 +35,7 @@ sub mk_accessors {
         *{"${class}::${col}"} = sub {
             if (@_==1) {
                 # my ($self) = @_;
-                Carp::croak("You don't selected $col") unless exists $_[0]->{$col};
+                Carp::croak("You don't selected $col in SQL.") unless exists $_[0]->{$col};
                 return $_[0]->{$col};
             } elsif (@_==2) {
                 # my ($self, $val) = @_;
