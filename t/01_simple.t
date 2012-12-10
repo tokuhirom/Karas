@@ -4,20 +4,33 @@ use utf8;
 use Test::More;
 use Test::Requires 'DBD::SQLite';
 use Karas;
+use Karas::Loader;
 
-sub create_karas {
-    return Karas->new(
+sub create_karas($) {
+    my $dbh = shift;
+    my $db = Karas::Loader->load(
         connect_info => [
-            'dbi:SQLite::memory:', '', '', {
-            RaiseError => 1,
-            PrintError => 0,
-        }]
+            'dbi:PassThrough:', '', '', {
+            pass_through_source => $dbh
+        }],
     );
+    return $db;
+}
+
+sub create_dbh {
+    my $dbh = DBI->connect(
+        'dbi:SQLite::memory:', '', '', {
+        RaiseError => 1,
+        PrintError => 0,
+    });
+    return $dbh;
 }
 
 subtest 'update from row object.' => sub {
-    my $db = create_karas();
-    $db->dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
+    my $dbh = create_dbh();
+    $dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
+
+    my $db = create_karas($dbh);
     my $row = $db->insert(foo => {id => 1, name => 'John'});
     is($row->name(), 'John');
     $row->name('Ben');
@@ -28,8 +41,10 @@ subtest 'update from row object.' => sub {
 };
 
 subtest 'count' => sub {
-    my $db = create_karas();
-    $db->dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
+    my $dbh = create_dbh();
+    $dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
+
+    my $db = create_karas($dbh);
     $db->insert(foo => {id => 1, name => 'John'});
     $db->insert(foo => {id => 2, name => 'John'});
     $db->insert(foo => {id => 3, name => 'John'});

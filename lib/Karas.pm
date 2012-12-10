@@ -12,7 +12,6 @@ use Module::Load ();
 use String::CamelCase ();
 use Data::Page::NoTotalEntries;
 use Scalar::Util ();
-use DBIx::Handler;
 use Class::Trigger qw(
     BEFORE_INSERT
 
@@ -30,6 +29,7 @@ use Class::Trigger qw(
 );
 
 use DBIx::TransactionManager;
+use DBIx::Handler;
 
 use Karas::Row;
 use Karas::QueryBuilder;
@@ -48,12 +48,11 @@ sub new {
     $args{connect_info}->[3]->{ShowErrorStatement} //= 1;
     $args{connect_info}->[3]->{AutoInactiveDestroy} //= 1;
 
-    $args{row_class_map} = $class->load_row_class_map();
-    $args{default_row_class} ||= 'Karas::Row';
     $args{connection_manager} = DBIx::Handler->new(
         @{$args{connect_info}}
     );
     my $self = bless {
+        row_class_map => {},
         %args
     }, $class;
     $self->{query_builder} ||= Karas::QueryBuilder->new(driver => $self->_driver_name);
@@ -97,47 +96,36 @@ sub disconnect {
     $self->connection_manager->disconnect();
 }
 
-sub reconnect {
-    my $self = shift;
-    $self->connection_manager->reconnect(@_);
-}
-
 # ------------------------------------------------------------------------- 
 # schema
 #
 # -------------------------------------------------------------------------
 
-our %_LOAD_ROW_CLASS_MAP_CACHE;
-sub load_row_class_map {
-    my $class = shift;
-    return +{} if $class eq __PACKAGE__;
-
-    $_LOAD_ROW_CLASS_MAP_CACHE{$class} ||= do {
-        my %ret;
-        for my $klass (Module::Find::useall "${class}::Row") {
-            my $table_name = do {
-                if ($klass->can('table_name')) {
-                    $klass->table_name;
-                } else {
-                    my $name = $klass;
-                    $name =~ s!^${class}::Row::!!;
-                    String::CamelCase::decamelize($name);
-                }
-            };
-            $ret{$table_name} = $klass;
+sub load_schema_from_db {
+    my ($self, %args) = @_;
+    require Karas::Loader;
+    my $class = ref($self) || $self;
+    $args{namespace} //= do {
+        if ($class eq 'Karas') {
+            state $i=0;
+            $class . '::Anon' . $i++;
+        } else {
+            $class;
         }
-        \%ret;
     };
-}
-
-sub clear_row_class_map_cache {
-    %_LOAD_ROW_CLASS_MAP_CACHE = ();
+    $self->{row_class_map} = Karas::Loader->load(
+        dbh => $self->dbh,
+        %args
+    );
+    return undef;
 }
 
 sub get_row_class {
-    my ($self, $table) = @_;
-    Carp::croak("Missing mandatory parameter: table") unless $table;
-    return $self->row_class_map->{$table} || $self->default_row_class;
+    my ($self, $table_name) = @_;
+    Carp::croak("Missing mandatory parameter: table_name") unless $table_name;
+    my $row_class = $self->row_class_map->{$table_name}
+        or Carp::croak("Unknown table: $table_name. $table_name is not registered to Karas.");
+    return $row_class;
 }
 
 # -------------------------------------------------------------------------
@@ -202,7 +190,10 @@ sub search_by_sql {
     my $sth = $self->dbh->prepare($sql);
     $sth->execute(@$binds);
     $table_name //= $self->guess_table_name($sql);
-    my $row_class = $table_name ? $self->get_row_class($table_name) : $self->default_row_class;
+    unless ($table_name) {
+        Carp::croak("Cannot guess table name from SQL. You need to pass the  table name: " . $sql);
+    }
+    my $row_class = $self->get_row_class($table_name);
     my @rows;
     while (my $row = $sth->fetchrow_hashref) {
         push @rows, $row_class->new($table_name, $row);
@@ -449,12 +440,6 @@ You can pass following arguments as hash:
 
 connect_info is an arguments for C<< DBI->connect >>.
 
-=item default_row_class(Optional)
-
-This is a default row class.
-
-Default value is : B<Karas::Row>.
-
 =item query_builder(Optional)
 
 This is a query builder. You need to pass the child class instance of SQL::Maker.
@@ -547,10 +532,6 @@ This is a bulk insert method. see L<SQL::Maker::Plugin::InsertMulti>.
 
 =over 4
 
-=item $db->clear_row_class_map_cache()
-
-Clear the row class map cache.
-
 =item $db->get_row_class($table_name);
 
 Clear row class from table name.
@@ -599,10 +580,6 @@ But if you use it as a parent class like following:
 
     parent MyDB;
     use parent qw/Karas/;
-
-Karas loads MyDB::Row::* automatically.
-
-Result of MyDB::Row is cached. You can clear cache by C<< Karas->clear_row_class_map_cache >>.
 
 =head1 FAQ
 

@@ -5,6 +5,8 @@ use Test::More;
 use Test::Requires 'DBD::SQLite', 'Test::Time';
 use Test::Time;
 use Karas;
+use Karas::Loader;
+use feature 'state';
 
 {
     package MyDB;
@@ -12,18 +14,39 @@ use Karas;
     __PACKAGE__->load_plugin('Timestamp');
 }
 
-sub create_db {
-    my $db = MyDB->new(connect_info => ['dbi:SQLite::memory:', '', '', {
+sub create_karas($) {
+    my $dbh = shift;
+    state $i = 0;
+    my $schema = Karas::Loader->load_schema(
+        connect_info => [
+            'dbi:PassThrough:', '', '', {
+            pass_through_source => $dbh
+        }],
+        namespace => "MyDB" . $i++,
+    );
+    my $db = MyDB->new(
+        connect_info => [
+            'dbi:PassThrough:', '', '', {
+            pass_through_source => $dbh
+        }],
+        row_class_map => $schema,
+    );
+    return $db;
+}
+
+sub create_dbh {
+    my $dbh = DBI->connect(
+        'dbi:SQLite::memory:', '', '', {
         RaiseError => 1,
         PrintError => 0,
-        AutoCommit => 1,
-    }]);
-    $db->dbh->do(q{CREATE TABLE foo (id integer PRIMARY KEY, name VARCHAR(255), created_on integer, updated_on integer)});
-    $db;
-};
+    });
+    $dbh->do(q{CREATE TABLE foo (id integer PRIMARY KEY, name VARCHAR(255), created_on integer, updated_on integer)});
+    return $dbh;
+}
 
 subtest 'insert' => sub {
-    my $db = create_db();
+    my $dbh = create_dbh();
+    my $db = create_karas($dbh);
     $db->insert(foo => {
         id => 1,
         name => 'heh',
@@ -34,7 +57,8 @@ subtest 'insert' => sub {
 };
 
 subtest 'bulk_insert' => sub {
-    my $db = create_db();
+    my $dbh = create_dbh();
+    my $db = create_karas($dbh);
     $db->bulk_insert(foo => ['id', 'name'], [
          [1, 'heh'],
          [2, 'bar'],
@@ -46,7 +70,8 @@ subtest 'bulk_insert' => sub {
 };
 
 subtest 'update_row' => sub {
-    my $db = create_db();
+    my $dbh = create_dbh();
+    my $db = create_karas($dbh);
     $db->insert(foo => {
         id => 1,
         name => 'heh',
@@ -59,7 +84,8 @@ subtest 'update_row' => sub {
 };
 
 subtest 'update_direct' => sub {
-    my $db = create_db();
+    my $dbh = create_dbh();
+    my $db = create_karas($dbh);
     $db->insert(foo => {
         id => 1,
         name => 'heh',
