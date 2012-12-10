@@ -1,5 +1,10 @@
 Revision history for Perl extension Karas
 
+0.05
+
+    [INCOMPATIBLE CHANGE]
+    - new Schema structure
+
 0.04
 
     commit b528adb8db17e4c2db37841850918572dce45068
