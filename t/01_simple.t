@@ -28,7 +28,7 @@ sub create_dbh {
 
 subtest 'update from row object.' => sub {
     my $dbh = create_dbh();
-    $dbh->do(q{CREATE TABLE foo (id integer not null, name varchar(255))});
+    $dbh->do(q{CREATE TABLE foo (id integer not null primary key, name varchar(255))});
 
     my $db = create_karas($dbh);
     my $row = $db->insert(foo => {id => 1, name => 'John'});
