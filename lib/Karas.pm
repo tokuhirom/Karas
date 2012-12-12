@@ -144,7 +144,7 @@ sub search {
     my $row_class = $self->get_row_class($table);
     my @rows;
     while (my $row = $sth->fetchrow_hashref) {
-        push @rows, $row_class->new($table, $row);
+        push @rows, $row_class->new($row);
     }
     return @rows;
 }
@@ -171,7 +171,7 @@ sub search_with_pager {
     my $row_class = $self->get_row_class($table);
     my @rows;
     while (my $row = $sth->fetchrow_hashref) {
-        push @rows, $row_class->new($table, $row);
+        push @rows, $row_class->new($row);
     }
     my $has_next = 0;
     if (@rows == $rows+1) {
@@ -198,7 +198,7 @@ sub search_by_sql {
     my $row_class = $self->get_row_class($table_name);
     my @rows;
     while (my $row = $sth->fetchrow_hashref) {
-        push @rows, $row_class->new($table_name, $row);
+        push @rows, $row_class->new($row);
     }
     return @rows;
 }
@@ -218,7 +218,7 @@ sub insert {
     }
 
     # cannot select row. just create new object from arguments.
-    return $row_class->new($table, $values);
+    return $row_class->new($values);
 }
 
 sub fast_insert {
@@ -262,7 +262,7 @@ sub retrieve {
     $sth->execute(@binds);
     my $row = $sth->fetchrow_hashref;
     if ($row) {
-        return $row_class->new($table, $row);
+        return $row_class->new($row);
     } else {
         return undef;
     }

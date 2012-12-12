@@ -6,9 +6,8 @@ use Carp ();
 use String::CamelCase ();
 
 sub new {
-    my ($class, $table_name, $values) = @_;
+    my ($class, $values) = @_;
     bless {
-        __private_table_name   => $table_name,
         __private_dirty_column => +{},
         %$values,
     }, $class;
