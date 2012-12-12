@@ -336,15 +336,15 @@ sub refetch {
 sub bulk_insert {
     my ($self, $table_name, $cols, $binds, $opts) = @_;
     Carp::croak("Missing mandatory parameter: table_name") unless defined $table_name;
-    if ($self->_driver_name ne 'mysql') {
-        Carp::croak("This method only supports mysql.");
+    if ($self->_driver_name eq 'mysql') {
+        $self->call_trigger(BEFORE_BULK_INSERT => $table_name, $cols, $binds, $opts);
+        my ($sql, @binds) = $self->query_builder->insert_multi($table_name, $cols, $binds, $opts);
+        my $sth = $self->dbh->prepare($sql);
+        $sth->execute(@binds);
+        return $sth->rows;
+    } else {
+        Carp::croak("'bulk_insert' method only supports mysql.");
     }
-
-    $self->call_trigger(BEFORE_BULK_INSERT => $table_name, $cols, $binds, $opts);
-    my ($sql, @binds) = $self->query_builder->insert_multi($table_name, $cols, $binds, $opts);
-    my $sth = $self->dbh->prepare($sql);
-    $sth->execute(@binds);
-    return $sth->rows;
 }
 
 sub insert_on_duplicate {
@@ -355,7 +355,7 @@ sub insert_on_duplicate {
         my $sth = $self->dbh->prepare($sql);
         $sth->execute(@binds);
     } else {
-        Carp::croak("This method only supports mysql.");
+        Carp::croak("'insert_on_duplicate' method only supports mysql: " . $self->_driver_name);
     }
 
     return undef;
