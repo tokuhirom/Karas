@@ -49,6 +49,7 @@ subtest 'SQLite' => sub {
 };
 
 subtest 'mysql' => sub {
+    no warnings 'once';
     eval q{ require Test::mysqld; 1; } or plan skip_all => "Missing Test::mysqld";
     my $mysqld = Test::mysqld->new(
         my_cnf => {
