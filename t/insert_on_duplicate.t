@@ -16,7 +16,6 @@ my $mysqld = Test::mysqld->new(
 {
     package MyDB;
     use parent qw/Karas/;
-    __PACKAGE__->load_plugin('InsertOnDuplicate');
     __PACKAGE__->load_plugin('Timestamp');
 }
 
