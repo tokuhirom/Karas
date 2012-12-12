@@ -125,10 +125,10 @@ Get a column value from row object. This method throws exception if column is no
 
 Set a column value for row object.
 
-You can't set scalarref. If you want to use C<< $row->set_column('cnt' => \'cnt+1') >> form, you should use C<< $db->update($row, { cnt => \'cnt+1'}) >> instead.
+You can't set ScalarRef. If you want to use C<< $row->set_column('cnt' => \'cnt+1') >> form, you should use C<< $db->update($row, { cnt => \'cnt+1'}) >> instead.
 
 =item __PACKAGE__->mk_column_accessors(@column_names)
 
-Create column accessor methos by @column_names.
+Create column accessor methods by @column_names.
 
 =back

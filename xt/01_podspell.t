@@ -62,3 +62,4 @@ JSON
 Plugins
 refetch
 Refetch
+ScalarRef
