@@ -24,7 +24,7 @@ sub has_column   {
 
 sub get_dirty_columns { $_[0]->{__private_dirty_column} }
 
-sub mk_accessors {
+sub mk_column_accessors {
     my ($class, @cols) = @_;
     $class = ref $class if ref $class;
     for my $col (@cols) {
@@ -76,7 +76,7 @@ sub AUTOLOAD {
     my $class = shift;
     my $meth = $AUTOLOAD;
     $meth =~ s/.*:://;
-    $class->mk_accessors($meth);
+    $class->mk_column_accessors($meth);
     $class->$meth(@_);
 }
 

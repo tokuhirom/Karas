@@ -50,7 +50,7 @@ sub load_schema {
         unshift @{"${klass}::ISA"}, 'Karas::Row';
         # make accessors
         my @column_names = map { $_->name } $table->columns();
-        $klass->mk_accessors(@column_names);
+        $klass->mk_column_accessors(@column_names);
         # define 'table_name' method
         {
             my $table_name = $table->name;
