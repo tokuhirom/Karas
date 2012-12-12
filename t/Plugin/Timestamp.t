@@ -34,68 +34,100 @@ sub create_karas($) {
     return $db;
 }
 
-sub create_dbh {
-    my $dbh = DBI->connect(
-        'dbi:SQLite::memory:', '', '', {
-        RaiseError => 1,
-        PrintError => 0,
-    });
+
+subtest 'SQLite' => sub {
+    my $create_dbh = sub {
+        my $dbh = DBI->connect(
+            'dbi:SQLite::memory:', '', '', {
+            RaiseError => 1,
+            PrintError => 0,
+        });
+        $dbh->do(q{CREATE TABLE foo (id integer PRIMARY KEY, name VARCHAR(255), created_on integer, updated_on integer)});
+        return $dbh;
+    };
+    run_test($create_dbh);
+};
+
+subtest 'mysql' => sub {
+    eval q{ require Test::mysqld; 1; } or plan skip_all => "Missing Test::mysqld";
+    my $mysqld = Test::mysqld->new(
+        my_cnf => {
+            'skip-networking' => '',    # no TCP socket
+        }
+    ) or plan skip_all => $Test::mysqld::errstr;
+    my $dbh = DBI->connect( $mysqld->dsn(dbname => 'test'), {RaiseError => 1} );
     $dbh->do(q{CREATE TABLE foo (id integer PRIMARY KEY, name VARCHAR(255), created_on integer, updated_on integer)});
-    return $dbh;
-}
 
-subtest 'insert' => sub {
-    my $dbh = create_dbh();
-    my $db = create_karas($dbh);
-    $db->insert(foo => {
-        id => 1,
-        name => 'heh',
-    });
-    my $row = $db->retrieve(foo => 1);
-    ok($row->created_on);
-    ok($row->updated_on);
-};
-
-subtest 'bulk_insert' => sub {
-    my $dbh = create_dbh();
-    my $db = create_karas($dbh);
-    $db->bulk_insert(foo => ['id', 'name'], [
-         [1, 'heh'],
-         [2, 'bar'],
-    ]);
-    my $row = $db->retrieve(foo => 1);
-    ok($row);
-    ok($row->created_on);
-    ok($row->updated_on);
-};
-
-subtest 'update_row' => sub {
-    my $dbh = create_dbh();
-    my $db = create_karas($dbh);
-    $db->insert(foo => {
-        id => 1,
-        name => 'heh',
-    });
-    my $row = $db->retrieve(foo => 1);
-    sleep 2;
-    $db->update($row, {name => 'Yoshio'});
-    $row = $db->refetch($row);
-    isnt($row->created_on, $row->updated_on);
-};
-
-subtest 'update_direct' => sub {
-    my $dbh = create_dbh();
-    my $db = create_karas($dbh);
-    $db->insert(foo => {
-        id => 1,
-        name => 'heh',
-    });
-    my $row = $db->retrieve(foo => 1);
-    sleep 2;
-    $db->update('foo' => {name => 'Yoshio'}, {id => 1});
-    $row = $db->refetch($row);
-    isnt($row->created_on, $row->updated_on);
+    my $create_dbh = sub {
+        $dbh->do(q{TRUNCATE TABLE foo});
+        return $dbh;
+    };
+    run_test($create_dbh);
 };
 
 done_testing;
 
+sub run_test {
+    my $create_dbh = shift;
+
+    subtest 'insert' => sub {
+        my $dbh = $create_dbh->();
+        my $db = create_karas($dbh);
+        $db->insert(foo => {
+            id => 1,
+            name => 'heh',
+        });
+        my $row = $db->retrieve(foo => 1);
+        ok($row->created_on);
+        ok($row->updated_on);
+    };
+
+    subtest 'bulk_insert' => sub {
+        my $dbh = $create_dbh->();
+        my $db = create_karas($dbh);
+        $db->bulk_insert(foo => [
+            {id => 1, name => 'heh'},
+            {id => 2, name => 'bar'},
+        ]);
+        {
+            my $row = $db->retrieve(foo => 1);
+            ok($row);
+            ok($row->created_on);
+            ok($row->updated_on);
+        }
+        {
+            my $row = $db->retrieve(foo => 2);
+            ok($row);
+            ok($row->created_on);
+            ok($row->updated_on);
+        }
+    };
+
+    subtest 'update_row' => sub {
+        my $dbh = $create_dbh->();
+        my $db = create_karas($dbh);
+        $db->insert(foo => {
+            id => 1,
+            name => 'heh',
+        });
+        my $row = $db->retrieve(foo => 1);
+        sleep 2;
+        $db->update($row, {name => 'Yoshio'});
+        $row = $db->refetch($row);
+        isnt($row->created_on, $row->updated_on);
+    };
+
+    subtest 'update_direct' => sub {
+        my $dbh = $create_dbh->();
+        my $db = create_karas($dbh);
+        $db->insert(foo => {
+            id => 1,
+            name => 'heh',
+        });
+        my $row = $db->retrieve(foo => 1);
+        sleep 2;
+        $db->update('foo' => {name => 'Yoshio'}, {id => 1});
+        $row = $db->refetch($row);
+        isnt($row->created_on, $row->updated_on);
+    };
+}

@@ -28,20 +28,19 @@ sub init {
         }
     });
     $db->add_trigger('BEFORE_BULK_INSERT' => sub {
-        my ($db, $table_name, $cols, $values) = @_;
+        my ($db, $table_name, $rows) = @_;
+        my $time = time(); # put same time to all rows.
         if ($plugin->_has_created_on($db, $table_name)) {
-            unless (grep { 'created_on' eq $_ } @$cols) {
-                push @$cols, 'created_on';
-                for my $row (@$values) {
-                    push @$row, time();
+            for my $row (@$rows) {
+                unless (exists $row->{created_on}) {
+                    $row->{created_on} = $time;
                 }
             }
         }
         if ($plugin->_has_updated_on($db, $table_name)) {
-            unless (grep { 'updated_on' eq $_ } @$cols) {
-                push @$cols, 'updated_on';
-                for my $row (@$values) {
-                    push @$row, time();
+            for my $row (@$rows) {
+                unless (exists $row->{updated_on}) {
+                    $row->{updated_on} = $time;
                 }
             }
         }

@@ -334,16 +334,29 @@ sub refetch {
 }
 
 sub bulk_insert {
-    my ($self, $table_name, $cols, $binds, $opts) = @_;
+    my ($self, $table_name, $rows_data) = @_;
     Carp::croak("Missing mandatory parameter: table_name") unless defined $table_name;
+    Carp::croak("rows_data must be ArrayRef") unless ref $rows_data eq 'ARRAY';
+
     if ($self->_driver_name eq 'mysql') {
-        $self->call_trigger(BEFORE_BULK_INSERT => $table_name, $cols, $binds, $opts);
-        my ($sql, @binds) = $self->query_builder->insert_multi($table_name, $cols, $binds, $opts);
+        $self->call_trigger(BEFORE_BULK_INSERT => $table_name, $rows_data);
+        my ($sql, @binds) = $self->query_builder->insert_multi($table_name, $rows_data);
         my $sth = $self->dbh->prepare($sql);
         $sth->execute(@binds);
         return $sth->rows;
     } else {
-        Carp::croak("'bulk_insert' method only supports mysql.");
+        # emulate bulk insert.
+        $self->call_trigger(BEFORE_BULK_INSERT => $table_name, $rows_data);
+        my $txn = $self->txn_scope();
+        {
+            # Do not run 'BEFORE_INSERT' hook for consistency between mysql.
+            for my $row (@$rows_data) {
+                my ($sql, @binds) = $self->query_builder->insert($table_name, $row);
+                my $sth = $self->dbh->prepare($sql);
+                $sth->execute(@binds);
+            }
+        }
+        $txn->commit;
     }
 }
 
@@ -542,7 +555,12 @@ Delete $table_name where $where.
 
 Refetch I<$row> object from database.
 
-=item $db->bulk_insert($table_name, $cols, $binds, $opts)
+=item $db->bulk_insert($table_name, $rows_data)
+
+    $db->bulk_insert('member', [
+        +{ name => 'John', email => 'john@example.com' },
+        +{ name => 'Ben',  email => 'ben@example.com' },
+    ])
 
 This is a bulk insert method. see L<SQL::Maker::Plugin::InsertMulti>.
 
