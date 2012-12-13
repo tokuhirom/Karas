@@ -4,7 +4,6 @@ Changes
 lib/Karas.pm
 lib/Karas/Dumper.pm
 lib/Karas/Loader.pm
-lib/Karas/Plugin/InsertOnDuplicate.pm
 lib/Karas/Plugin/Timestamp.pm
 lib/Karas/QueryBuilder.pm
 lib/Karas/Row.pm
@@ -20,9 +19,10 @@ t/02_retrieve.t
 t/connection.t
 t/dumper.t
 t/guess_table_name.t
+t/insert_on_duplicate.t
 t/loader.t
-t/Plugin/InsertOnDuplicate.t
 t/Plugin/Timestamp.t
+t/replace.t
 t/schema.t
 t/Util.pm
 xt/01_podspell.t

@@ -4,9 +4,11 @@ use warnings;
 use utf8;
 use 5.0100000;
 use Carp ();
-use Karas::Dumper;
-use DBIx::Inspector;
+
 use Karas;
+
+use String::CamelCase;
+use DBIx::Inspector;
 
 sub load {
     my $class = shift;

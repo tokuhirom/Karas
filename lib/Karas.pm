@@ -7,11 +7,6 @@ use Carp ();
 use Class::Accessor::Lite 0.05 (
     rw => [qw/query_builder default_row_class owner_pid connection_manager row_class_map/],
 );
-use Module::Find ();
-use Module::Load ();
-use String::CamelCase ();
-use Data::Page::NoTotalEntries;
-use Scalar::Util ();
 use Class::Trigger qw(
     BEFORE_INSERT
 
@@ -31,6 +26,9 @@ use Class::Trigger qw(
     AFTER_DELETE_ROW
     AFTER_DELETE_DIRECT
 );
+
+use Module::Load ();
+use Data::Page::NoTotalEntries;
 
 use DBIx::TransactionManager;
 use DBIx::Handler;
