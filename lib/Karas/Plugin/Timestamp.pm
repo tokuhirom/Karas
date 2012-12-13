@@ -27,6 +27,19 @@ sub init {
             }
         }
     });
+    $db->add_trigger('BEFORE_REPLACE' => sub {
+        my ($db, $table_name, $values) = @_;
+        if ($plugin->_has_created_on($db, $table_name)) {
+            unless (exists $values->{created_on}) {
+                $values->{'created_on'} = time();
+            }
+        }
+        if ($plugin->_has_updated_on($db, $table_name)) {
+            unless (exists $values->{updated_on}) {
+                $values->{'updated_on'} = time();
+            }
+        }
+    });
     $db->add_trigger('BEFORE_BULK_INSERT' => sub {
         my ($db, $table_name, $rows) = @_;
         my $time = time(); # put same time to all rows.

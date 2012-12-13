@@ -83,6 +83,18 @@ sub run_test {
         ok($row->updated_on);
     };
 
+    subtest 'replace' => sub {
+        my $dbh = $create_dbh->();
+        my $db = create_karas($dbh);
+        $db->replace(foo => {
+            id => 1,
+            name => 'heh',
+        });
+        my $row = $db->retrieve(foo => 1);
+        ok($row->created_on);
+        ok($row->updated_on);
+    };
+
     subtest 'bulk_insert' => sub {
         my $dbh = $create_dbh->();
         my $db = create_karas($dbh);

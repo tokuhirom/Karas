@@ -15,6 +15,8 @@ use Scalar::Util ();
 use Class::Trigger qw(
     BEFORE_INSERT
 
+    BEFORE_REPLACE
+
     BEFORE_BULK_INSERT
 
     BEFORE_INSERT_ON_DUPLICATE
@@ -225,14 +227,24 @@ sub fast_insert {
     my ($self, $table, $values) = @_;
     Carp::croak("Missing mandatory parameter: table") unless defined $table;
     Carp::croak("Missing mandatory parameter: values")   unless defined $values;
-    $self->_insert($table, $values);
-    return $self->last_insert_id;
+    my $last_insert_id = $self->_insert($table, $values);
+    return $last_insert_id;
 }
 
 sub _insert {
     my ($self, $table, $values) = @_;
     $self->call_trigger(BEFORE_INSERT => $table, $values);
     my ($sql, @binds) = $self->query_builder->insert($table, $values);
+    my $sth = $self->dbh->prepare($sql);
+    $sth->execute(@binds);
+    my $last_insert_id = $self->last_insert_id;
+    return $last_insert_id;
+}
+
+sub replace {
+    my ($self, $table, $values) = @_;
+    $self->call_trigger(BEFORE_REPLACE => $table, $values);
+    my ($sql, @binds) = $self->query_builder->insert($table, $values, {prefix => 'REPLACE INTO'});
     my $sth = $self->dbh->prepare($sql);
     $sth->execute(@binds);
     my $last_insert_id = $self->last_insert_id;
