@@ -227,8 +227,8 @@ sub fast_insert {
     my ($self, $table, $values) = @_;
     Carp::croak("Missing mandatory parameter: table") unless defined $table;
     Carp::croak("Missing mandatory parameter: values")   unless defined $values;
-    my $last_insert_id = $self->_insert($table, $values);
-    return $last_insert_id;
+    $self->_insert($table, $values);
+    return $self->last_insert_id;
 }
 
 sub _insert {
@@ -237,8 +237,7 @@ sub _insert {
     my ($sql, @binds) = $self->query_builder->insert($table, $values);
     my $sth = $self->dbh->prepare($sql);
     $sth->execute(@binds);
-    my $last_insert_id = $self->last_insert_id;
-    return $last_insert_id;
+    return undef;
 }
 
 sub replace {
@@ -546,6 +545,10 @@ Insert row to database. And refetch row from database.
 =item $db->fast_insert($table, $values);
 
 Insert row to database.
+
+=item $db->replace($table, $values);
+
+Replace into row to database.
 
 =item $db->update($row, \%opts)
 
