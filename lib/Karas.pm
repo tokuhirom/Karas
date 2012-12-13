@@ -636,15 +636,6 @@ But if you use it as a parent class like following:
 
 =over 4
 
-=item How do you suppress creating objects?
-
-You can use L<Karas::Row::Raw>.
-
-    my $karas = Karas->new(..., default_row_class => 'Karas::Row::Raw');
-    ...
-
-It does not bless objects and just return hashref itself.
-
 =back
 
 =head1 AUTHOR
