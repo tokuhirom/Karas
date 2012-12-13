@@ -1,5 +1,10 @@
 Revision history for Perl extension Karas
 
+0.07
+
+    [INCOMPATIBLE CHANGE]
+    - removed Ro::Raw
+
 0.06
 
     [INCOMPATIBLE CHANGE]

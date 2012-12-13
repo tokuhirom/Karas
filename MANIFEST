@@ -7,7 +7,6 @@ lib/Karas/Loader.pm
 lib/Karas/Plugin/Timestamp.pm
 lib/Karas/QueryBuilder.pm
 lib/Karas/Row.pm
-lib/Karas/Row/Raw.pm
 LICENSE
 MANIFEST			This list of files
 META.json
