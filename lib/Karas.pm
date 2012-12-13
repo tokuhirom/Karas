@@ -2,7 +2,7 @@ package Karas;
 use strict;
 use warnings;
 use 5.010001;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 use Carp ();
 use Class::Accessor::Lite 0.05 (
     rw => [qw/query_builder default_row_class owner_pid connection_manager row_class_map/],

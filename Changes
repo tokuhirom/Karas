@@ -1,5 +1,13 @@
 Revision history for Perl extension Karas
 
+0.06
+
+    [INCOMPATIBLE CHANGE]
+    - pull insert_on_duplicate to public core method.
+    - bulk_insert method supports non mysql RDB
+    - no AUTOLOAD, no magic.
+    - added 'replace' method.
+
 0.05
 
     [INCOMPATIBLE CHANGE]
