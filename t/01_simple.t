@@ -31,7 +31,7 @@ subtest 'update from row object.' => sub {
     $dbh->do(q{CREATE TABLE foo (id integer not null primary key, name varchar(255))});
 
     my $db = create_karas($dbh);
-    my $row = $db->insert(foo => {id => 1, name => 'John'});
+    my $row = $db->insert_and_select(foo => {id => 1, name => 'John'});
     is($row->name(), 'John');
     $row->name('Ben');
     is($row->name(), 'Ben');

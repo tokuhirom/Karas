@@ -203,7 +203,7 @@ sub search_by_sql {
     return @rows;
 }
 
-sub insert {
+sub insert_and_select {
     my ($self, $table, $values) = @_;
     Carp::croak("Missing mandatory parameter: table") unless defined $table;
     Carp::croak("Missing mandatory parameter: values")   unless defined $values;
@@ -221,7 +221,7 @@ sub insert {
     return $row_class->new($values);
 }
 
-sub fast_insert {
+sub insert {
     my ($self, $table, $values) = @_;
     Carp::croak("Missing mandatory parameter: table") unless defined $table;
     Carp::croak("Missing mandatory parameter: values")   unless defined $values;
