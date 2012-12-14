@@ -226,7 +226,7 @@ sub insert {
     Carp::croak("Missing mandatory parameter: table") unless defined $table;
     Carp::croak("Missing mandatory parameter: values")   unless defined $values;
     $self->_insert($table, $values);
-    return $self->last_insert_id;
+    return undef;
 }
 
 sub _insert {
